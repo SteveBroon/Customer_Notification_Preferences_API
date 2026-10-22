@@ -31,7 +31,22 @@ namespace SampleApi.Controllers
             [FromBody] CustomerPreferencesRequest request,
             CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var validation = await requestValidator.ValidateAsync(request, cancellationToken);
+            if (!validation.IsValid)
+            {
+                foreach (var error in validation.Errors)
+                {
+                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
+                }
+                return ValidationProblem(ModelState);
+            }
+
+            var updated = await customerRepository.UpdateCustomerPreferencesAsync(customerId, request, cancellationToken);
+            if (!updated)
+            {
+                return NotFound();
+            }
+            return Ok(new CustomerPreferencesResponse(customerId, request.EmailEnabled!.Value, request.SmsEnabled!.Value));
         }
     }
 }
