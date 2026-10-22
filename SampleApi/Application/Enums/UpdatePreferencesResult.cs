@@ -1,8 +1,9 @@
-namespace SampleApi.Application.Enums;
-
-public enum UpdatePreferencesResult
+namespace SampleApi.Application.Enums
 {
-       UnChanged,
-        Updated,
-        CustomerNotFound
+    public enum UpdatePreferencesResult
+    {
+           UnChanged,
+            Updated,
+            CustomerNotFound
+    }
 }

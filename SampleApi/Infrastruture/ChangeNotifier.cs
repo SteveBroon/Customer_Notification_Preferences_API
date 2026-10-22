@@ -1,16 +1,17 @@
 using SampleApi.Infrastruture.Interfaces;
 
-namespace SampleApi.Infrastruture;
-
-public class ChangeNotifier : IChangeNotifier
+namespace SampleApi.Infrastruture
 {
-    public async Task<bool> NotifyCustomerPreferencesUpdateAsync(
-        Guid customerId,
-        bool emailEnabled,
-        bool smsEnabled,
-        CancellationToken cancellationToken)
+    public class ChangeNotifier : IChangeNotifier
     {
-        // Implement the notification logic here
-        return await Task.FromResult(true);
+        public async Task<bool> NotifyCustomerPreferencesUpdateAsync(
+            Guid customerId,
+            bool emailEnabled,
+            bool smsEnabled,
+            CancellationToken cancellationToken)
+        {
+            // Implement the notification logic here
+            return await Task.FromResult(true);
+        }
     }
 }

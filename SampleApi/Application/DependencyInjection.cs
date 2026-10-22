@@ -4,14 +4,15 @@ using SampleApi.Application.Interfaces;
 using SampleApi.Application.Services;
 using SampleApi.Application.Validation;
 
-namespace SampleApi.Application;
-
-public static class DependencyInjection
+namespace SampleApi.Application
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
+    public static class DependencyInjection
     {
-        services.AddSingleton<IValidator<CustomerPreferencesRequest>, CustomerPreferencesRequestValidator>();
-        services.AddScoped<ICustomerService, CustomerService>();
-        return services;
+        public static IServiceCollection AddApplication(this IServiceCollection services)
+        {
+            services.AddSingleton<IValidator<CustomerPreferencesRequest>, CustomerPreferencesRequestValidator>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            return services;
+        }
     }
 }

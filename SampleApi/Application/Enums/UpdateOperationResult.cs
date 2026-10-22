@@ -1,8 +1,9 @@
-namespace SampleApi.Application.Enums;
-
-public enum UpdateOperationResult
+namespace SampleApi.Application.Enums
 {
-    Success,
-    Failure,
-    NotFound
+    public enum UpdateOperationResult
+    {
+        Success,
+        Failure,
+        NotFound
+    }
 }

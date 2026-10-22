@@ -1,13 +1,14 @@
 using FluentValidation;
 using SampleApi.Application.DTO;
 
-namespace SampleApi.Application.Validation;
-
-public class CustomerPreferencesRequestValidator : AbstractValidator<CustomerPreferencesRequest>
+namespace SampleApi.Application.Validation
 {
-    public CustomerPreferencesRequestValidator()
+    public class CustomerPreferencesRequestValidator : AbstractValidator<CustomerPreferencesRequest>
     {
-        RuleFor(x => x.EmailEnabled).NotNull().WithMessage("Email preference is required.");
-        RuleFor(x => x.SmsEnabled).NotNull().WithMessage("SMS preference is required.");
+        public CustomerPreferencesRequestValidator()
+        {
+            RuleFor(x => x.EmailEnabled).NotNull().WithMessage("Email preference is required.");
+            RuleFor(x => x.SmsEnabled).NotNull().WithMessage("SMS preference is required.");
+        }
     }
 }
