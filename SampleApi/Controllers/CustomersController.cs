@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-
+using SampleApi.Application.DTO;
 namespace SampleApi.Controllers
 {
     [Route("api/[controller]")]
@@ -8,7 +8,7 @@ namespace SampleApi.Controllers
     {
         [HttpGet]
         [Route("{customerId}/notification-preferences")]
-        public async Task<IActionResult> GetNotificationPreferencesAsync(
+        public async Task<ActionResult<CustomerPreferencesResponse>> GetNotificationPreferencesAsync(
             [FromRoute] Guid customerId,
             CancellationToken cancellationToken)
         {
@@ -17,7 +17,7 @@ namespace SampleApi.Controllers
 
         [HttpPut]
         [Route("{customerId}/notification-preferences")]
-        public async Task<IActionResult> UpdateNotificationPreferencesAsync(
+        public async Task<ActionResult<CustomerPreferencesResponse>> UpdateNotificationPreferencesAsync(
             [FromRoute] Guid customerId,
             CancellationToken cancellationToken)
         {
