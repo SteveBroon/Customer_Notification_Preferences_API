@@ -114,7 +114,7 @@ namespace SampleApiTests
             }
 
             [Fact]
-            public async Task NonExistingCustomer_ReturnsNotFoundWithoutSendingNotification()
+            public async Task NonExistingCustomer_ReturnsNotFound()
             {
                 // Arrange
                 var updateRequest = new CustomerPreferencesRequest
