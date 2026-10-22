@@ -1,10 +1,10 @@
 using SampleApi.Application.DTO;
+using SampleApi.Application.Enums;
 
-namespace SampleApi.Application.Interfaces
+namespace SampleApi.Application.Interfaces;
+
+public interface ICustomerRepository
 {
-    public interface ICustomerRepository
-    {
-        Task<CustomerPreferencesResponse?> GetCustomerPreferencesAsync(Guid customerId, CancellationToken cancellationToken);
-        Task<bool> UpdateCustomerPreferencesAsync(Guid customerId, CustomerPreferencesRequest request, CancellationToken cancellationToken);
-    }
+    Task<CustomerPreferencesResponse?> GetCustomerPreferencesAsync(Guid customerId, CancellationToken cancellationToken);
+    Task<UpdatePreferencesResult> UpdateCustomerPreferencesAsync(CustomerPreferences preferences, CancellationToken cancellationToken);
 }

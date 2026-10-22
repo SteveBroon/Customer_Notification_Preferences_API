@@ -1,9 +1,8 @@
-namespace SampleApi.Domain
+namespace SampleApi.Domain;
+
+public class Customer
 {
-    public class Customer
-    {
-        public Guid Id { get; set; }
-        public bool EmailNotificationsEnabled { get; set; }
-        public bool SmsNotificationsEnabled { get; set; }
-    }
+    public Guid Id { get; set; }
+    public bool EmailNotificationsEnabled { get; set; }
+    public bool SmsNotificationsEnabled { get; set; }
 }
