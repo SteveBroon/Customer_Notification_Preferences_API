@@ -66,7 +66,9 @@ namespace SampleApiTests
 
                 // Assert
                 Assert.True(result == UpdateOperationResult.NotFound);
-                customerRepository.Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
+                customerRepository
+                    .Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
+                changeNotifier.VerifyNoOtherCalls();
             }
 
             [Fact]
@@ -86,8 +88,10 @@ namespace SampleApiTests
 
                 // Assert
                 Assert.True(result == UpdateOperationResult.Failure);
-                customerRepository.Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
-                changeNotifier.Verify(n => n.NotifyCustomerPreferencesUpdateAsync(CustomerId, true, true, CancellationToken.None), Times.Once);
+                customerRepository
+                    .Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
+                changeNotifier
+                    .Verify(n => n.NotifyCustomerPreferencesUpdateAsync(CustomerId, true, true, CancellationToken.None), Times.Once);
             }
 
             [Fact]
@@ -108,8 +112,10 @@ namespace SampleApiTests
 
                 // Assert
                 Assert.True(result == UpdateOperationResult.Success);
-                customerRepository.Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
-                changeNotifier.Verify(n => n.NotifyCustomerPreferencesUpdateAsync(CustomerId, true, true, CancellationToken.None), Times.Once);
+                customerRepository
+                    .Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
+                changeNotifier
+                    .Verify(n => n.NotifyCustomerPreferencesUpdateAsync(CustomerId, true, true, CancellationToken.None), Times.Once);
             }
 
             [Fact]
@@ -127,9 +133,34 @@ namespace SampleApiTests
 
                 // Assert
                 Assert.True(result == UpdateOperationResult.Success);
-                customerRepository.Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
-                changeNotifier.VerifyNoOtherCalls();
+                customerRepository
+                    .Verify(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None), Times.Once);
+                changeNotifier
+                    .VerifyNoOtherCalls();
             }
+
+            [Fact]
+            public async Task NotifiesOnlyAfterPreferencesArePersisted()
+            {
+                // Arrange
+                var request = new CustomerPreferences(CustomerId, false, true);
+                var calls = new List<string>();
+                customerRepository
+                    .Setup(r => r.UpdateCustomerPreferencesAsync(request, CancellationToken.None))
+                    .Callback(() => calls.Add("persist"))
+                    .ReturnsAsync(UpdatePreferencesResult.Updated);
+                changeNotifier
+                    .Setup(n => n.NotifyCustomerPreferencesUpdateAsync(CustomerId, false, true, CancellationToken.None))
+                    .Callback(() => calls.Add("notify"))
+                    .ReturnsAsync(true);
+
+                // Act
+                await CreateCustomerService().UpdateCustomerPreferencesAsync(request, CancellationToken.None);
+
+                // Assert
+                Assert.Equal(new[] { "persist", "notify" }, calls);
+            }
+
         }
     }
 }
