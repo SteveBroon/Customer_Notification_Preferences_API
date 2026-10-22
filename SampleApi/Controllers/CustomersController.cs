@@ -1,10 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using SampleApi.Application.DTO;
+using SampleApi.Application.Interfaces;
 namespace SampleApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomersController : ControllerBase
+    public class CustomersController(ICustomerRepository customerRepository) : ControllerBase
     {
         [HttpGet]
         [Route("{customerId}/notification-preferences")]
@@ -12,7 +13,12 @@ namespace SampleApi.Controllers
             [FromRoute] Guid customerId,
             CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var preferences = await customerRepository.GetCustomerPreferencesAsync(customerId, cancellationToken);
+            if (preferences == null)
+            {
+                return NotFound();
+            }
+            return Ok(preferences);
         }
 
         [HttpPut]

@@ -11,7 +11,7 @@ namespace SampleApi.Infrastruture
         {
             modelBuilder.ApplyConfigurationsFromAssembly(
                 typeof(CustomerDbContext).Assembly);
-                
+
             modelBuilder.Entity<Domain.Customer>().HasData(
                     new() { Id = Guid.Parse("6b56b62f-0bdf-4354-a822-9b1c257c5ec0"), EmailNotificationsEnabled = true, SmsNotificationsEnabled = false },
                     new() { Id = Guid.Parse("af285565-031a-4df2-9f82-98f101dd08fa"), EmailNotificationsEnabled = false, SmsNotificationsEnabled = true },
@@ -21,5 +21,4 @@ namespace SampleApi.Infrastruture
                     new() { Id = Guid.Parse("de5de5f6-0d9d-472d-98be-b45db46f84ca"), EmailNotificationsEnabled = false, SmsNotificationsEnabled = true });
         }
     }
-
 }
