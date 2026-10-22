@@ -14,5 +14,18 @@ namespace SampleApi.Infrastruture
                 .Select(c => new CustomerPreferencesResponse(c.Id, c.EmailNotificationsEnabled, c.SmsNotificationsEnabled))
                 .FirstOrDefaultAsync(cancellationToken);
         }
+
+        public async Task<bool> UpdateCustomerPreferencesAsync(Guid customerId, CustomerPreferencesRequest request, CancellationToken cancellationToken)
+        {
+            var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Id == customerId, cancellationToken);
+            if (customer != null)
+            {
+                customer.EmailNotificationsEnabled = request.EmailEnabled!.Value;
+                customer.SmsNotificationsEnabled = request.SmsEnabled!.Value;
+                await dbContext.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+            return false;
+        }
     }
 }

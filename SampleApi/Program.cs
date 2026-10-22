@@ -1,10 +1,12 @@
 using Scalar.AspNetCore;
 using SampleApi.Infrastruture;
+using SampleApi.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddInfrastructure();
+builder.Services.AddApplication();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -21,6 +23,8 @@ if (app.Environment.IsDevelopment())
         options.WithTitle("Customer Preferences Documentation");
     });
 }
+
+app.InitialiseDatabase();
 
 app.UseHttpsRedirection();
 
