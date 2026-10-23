@@ -11,7 +11,7 @@ namespace SampleApi.Infrastruture
             CancellationToken cancellationToken)
         {
             // Implement the notification logic here
-            logger.LogInformation("Notifying customer {CustomerId} of preference update: EmailEnabled={EmailEnabled}, SmsEnabled={SmsEnabled}", customerId, emailEnabled, smsEnabled);
+            logger.LogInformation("Notifying change of preferences for customer {CustomerId} : EmailEnabled={EmailEnabled}, SmsEnabled={SmsEnabled}", customerId, emailEnabled, smsEnabled);
             return await Task.FromResult(true);
         }
     }
