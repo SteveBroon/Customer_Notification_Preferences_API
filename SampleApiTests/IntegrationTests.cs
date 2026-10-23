@@ -103,7 +103,7 @@ namespace SampleApiTests
             // Act
             var response = await client.PutAsJsonAsync(
                 $"/api/customers/{ExistingCustomerId}/notification-preferences",
-                new CustomerPreferencesRequest(false, true));
+                new CustomerPreferencesRequest{ EmailEnabled = false, SmsEnabled = true });
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -120,7 +120,7 @@ namespace SampleApiTests
             using var client = factory.CreateClient();
             await client.PutAsJsonAsync(
                 $"/api/customers/{ExistingCustomerId}/notification-preferences",
-                new CustomerPreferencesRequest(false, true));
+                new CustomerPreferencesRequest{ EmailEnabled = false, SmsEnabled = true });
 
             // Act
             var response = await client.GetAsync(
@@ -131,7 +131,7 @@ namespace SampleApiTests
             var persisted = await response.Content.ReadFromJsonAsync<CustomerPreferencesResponse>();
             Assert.Equal(new CustomerPreferencesResponse(ExistingCustomerId, false, true), persisted);
         }
-        
+
         // AC05
         [Fact]
         public async Task Put_UnchangedPreferences_DoesNotCallNotifier()
@@ -143,7 +143,7 @@ namespace SampleApiTests
 
             var response = await client.PutAsJsonAsync(
                 $"/api/customers/{ExistingCustomerId}/notification-preferences",
-                new CustomerPreferencesRequest(true, false));
+                new CustomerPreferencesRequest{ EmailEnabled = true, SmsEnabled = false });
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -161,7 +161,7 @@ namespace SampleApiTests
             // Act
             await client.PutAsJsonAsync(
                 $"/api/customers/{ExistingCustomerId}/notification-preferences",
-                new CustomerPreferencesRequest(false, true));
+                new CustomerPreferencesRequest{ EmailEnabled = false, SmsEnabled = true });
 
             // Assert
             Assert.Equal(
@@ -181,7 +181,7 @@ namespace SampleApiTests
             // Act
             var response = await client.PutAsJsonAsync(
                 $"/api/customers/{unknownCustomerId}/notification-preferences",
-                new CustomerPreferencesRequest(false, true));
+                new CustomerPreferencesRequest{ EmailEnabled = false, SmsEnabled = true });
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -193,12 +193,12 @@ namespace SampleApiTests
 
         // AC08
         [Theory]
-        [InlineData("", null, null)]
-        [InlineData("{", null, null)]
-        [InlineData("""{"smsEnabled":true}""", "EmailEnabled", "Email preference is required.")]
-        [InlineData("""{"emailEnabled":true}""", "SmsEnabled", "SMS preference is required.")]
+        [InlineData("", null)]
+        [InlineData("{", null)]
+        [InlineData("""{"smsEnabled":true}""", "emailEnabled")]
+        [InlineData("""{"emailEnabled":true}""", "smsEnabled")]
         public async Task Put_InvalidBody_ReturnsBadRequest_DoesNotChangePreferences_OrNotify(
-            string body, string? expectedProperty, string? expectedMessage)
+            string body, string? missingProperty)
         {
             // Arrange
             using var factory = new CustomerApiFactory();
@@ -220,9 +220,11 @@ namespace SampleApiTests
             Assert.NotNull(problem);
             Assert.Equal(400, problem.Status);
             Assert.NotEmpty(problem.Errors);
-            if (expectedProperty is not null)
+            if (missingProperty is not null)
             {
-                Assert.Contains(expectedMessage, problem.Errors[expectedProperty]);
+                Assert.Contains(
+                    problem.Errors.Values.SelectMany(messages => messages),
+                    message => message.Contains($"'{missingProperty}'"));
             }
 
             Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
@@ -241,7 +243,7 @@ namespace SampleApiTests
             // Act
             var response = await client.PutAsJsonAsync(
                 "/api/customers/not-a-guid/notification-preferences",
-                new CustomerPreferencesRequest(false, true));
+                new CustomerPreferencesRequest{ EmailEnabled = false, SmsEnabled = true });
             
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -260,7 +262,7 @@ namespace SampleApiTests
             // Act
             var response = await client.PutAsJsonAsync(
                 $"/api/customers/{ExistingCustomerId}/notification-preferences",
-                new CustomerPreferencesRequest(false, true));
+                new CustomerPreferencesRequest{ EmailEnabled = false, SmsEnabled = true });
 
             // Assert
             Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);

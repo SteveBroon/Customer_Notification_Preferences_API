@@ -1,7 +1,8 @@
 namespace SampleApi.Application.DTO
 {
-    public record CustomerPreferencesRequest(
-        bool? EmailEnabled,
-        bool? SmsEnabled
-    );
+    public class CustomerPreferencesRequest
+    {
+        public required bool EmailEnabled { get; init; }
+        public required bool SmsEnabled { get; init; }
+    }
 }

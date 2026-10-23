@@ -1,4 +1,3 @@
-using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using SampleApi.Application.DTO;
 using SampleApi.Application.Enums;
@@ -8,8 +7,7 @@ namespace SampleApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class CustomersController(
-        ICustomerService customerService,
-        IValidator<CustomerPreferencesRequest> requestValidator) : ControllerBase
+        ICustomerService customerService) : ControllerBase
     {
         [HttpGet]
         [Route("{customerId}/notification-preferences")]
@@ -32,17 +30,7 @@ namespace SampleApi.Controllers
             [FromBody] CustomerPreferencesRequest request,
             CancellationToken cancellationToken)
         {
-            var validation = await requestValidator.ValidateAsync(request, cancellationToken);
-            if (!validation.IsValid)
-            {
-                foreach (var error in validation.Errors)
-                {
-                    ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
-                return ValidationProblem(ModelState);
-            }
-
-            var updateResult = await customerService.UpdateCustomerPreferencesAsync(new CustomerPreferences(customerId, request.EmailEnabled!.Value, request.SmsEnabled!.Value), cancellationToken);
+            var updateResult = await customerService.UpdateCustomerPreferencesAsync(new CustomerPreferences(customerId, request.EmailEnabled!, request.SmsEnabled!), cancellationToken);
 
             return HandleUpdateResult(updateResult, customerId, request);
         }
@@ -56,8 +44,10 @@ namespace SampleApi.Controllers
                 {
                     UpdateOperationResult.Success => Ok(new CustomerPreferencesResponse(
                         customerId,
-                        request.EmailEnabled!.Value,
-                        request.SmsEnabled!.Value
+                        request.EmailEnabled,
+                        request.SmsEnabled
+                        // request.EmailEnabled!.Value,
+                        // request.SmsEnabled!.Value
                     )),
                     UpdateOperationResult.NotFound => NotFound(),
                     UpdateOperationResult.Failure => Problem(

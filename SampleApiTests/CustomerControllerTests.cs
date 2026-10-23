@@ -3,8 +3,6 @@ using SampleApi.Application.DTO;
 using SampleApi.Application.Interfaces;
 using SampleApi.Controllers;
 using Moq;
-using FluentValidation;
-using FluentValidation.Results;
 using SampleApi.Application.Enums;
 
 namespace SampleApiTests
@@ -14,9 +12,8 @@ namespace SampleApiTests
         private static readonly Guid CustomerId = Guid.Parse("6b56b62f-0bdf-4354-a822-9b1c257c5ec0");
 
         private readonly Mock<ICustomerService> customerService = new Mock<ICustomerService>();
-        private readonly Mock<IValidator<CustomerPreferencesRequest>> requestValidator = new(MockBehavior.Strict);
 
-        private CustomersController CreateController() => new(customerService.Object, requestValidator.Object);
+        private CustomersController CreateController() => new(customerService.Object);
 
         public class GetNotificationPreferencesAsyncTests : CustomerControllerTests
         {
@@ -44,7 +41,6 @@ namespace SampleApiTests
                 customerService.Verify(
                     r => r.GetCustomerPreferencesAsync(CustomerId, It.IsAny<CancellationToken>()),
                     Times.Once);
-                requestValidator.VerifyNoOtherCalls();
             }   
 
             [Fact]
@@ -63,7 +59,6 @@ namespace SampleApiTests
                 customerService.Verify(
                     r => r.GetCustomerPreferencesAsync(CustomerId, It.IsAny<CancellationToken>()),
                     Times.Once);
-                requestValidator.VerifyNoOtherCalls();
             }
         }
 
@@ -78,10 +73,10 @@ namespace SampleApiTests
             {
                 // Arrange
                 var updateRequest = new CustomerPreferencesRequest
-                (
-                    emailEnabled,
-                    smsEnabled
-                );
+                {
+                    EmailEnabled = emailEnabled,
+                    SmsEnabled = smsEnabled
+                };
                 var expected = new CustomerPreferencesResponse
                 (
                     CustomerId,
@@ -89,12 +84,8 @@ namespace SampleApiTests
                     smsEnabled
                 );
 
-                requestValidator
-                    .Setup(v => v.ValidateAsync(updateRequest, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new ValidationResult());
-
                 customerService
-                    .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled!.Value, updateRequest.SmsEnabled!.Value), CancellationToken.None))
+                    .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled, updateRequest.SmsEnabled), CancellationToken.None))
                     .ReturnsAsync(UpdateOperationResult.Success);
 
                 // Act
@@ -105,11 +96,8 @@ namespace SampleApiTests
                 var okResult = Assert.IsType<OkObjectResult>(result.Result);
                 var actual = Assert.IsType<CustomerPreferencesResponse>(okResult.Value);
                 Assert.True(actual == expected);
-                requestValidator.Verify(
-                    v => v.ValidateAsync(updateRequest, It.IsAny<CancellationToken>()),
-                    Times.Once);
                 customerService.Verify(
-                    r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled!.Value, updateRequest.SmsEnabled!.Value), CancellationToken.None),
+                    r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled, updateRequest.SmsEnabled), CancellationToken.None),
                     Times.Once);
             }
 
@@ -118,17 +106,13 @@ namespace SampleApiTests
             {
                 // Arrange
                 var updateRequest = new CustomerPreferencesRequest
-                (
-                    true,
-                    true
-                );
-
-                requestValidator
-                    .Setup(v => v.ValidateAsync(updateRequest, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new ValidationResult());
+                {
+                    EmailEnabled = true,
+                    SmsEnabled = true
+                };
 
                 customerService
-                    .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled!.Value, updateRequest.SmsEnabled!.Value), CancellationToken.None))
+                    .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled, updateRequest.SmsEnabled), CancellationToken.None))
                     .ReturnsAsync(UpdateOperationResult.NotFound);
 
                 // Act
@@ -137,11 +121,8 @@ namespace SampleApiTests
                 // Assert
                 Assert.NotNull(result);
                 Assert.IsType<NotFoundResult>(result.Result);
-                requestValidator.Verify(
-                    v => v.ValidateAsync(updateRequest, It.IsAny<CancellationToken>()),
-                    Times.Once);
                 customerService.Verify(
-                    r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled!.Value, updateRequest.SmsEnabled!.Value), CancellationToken.None),
+                    r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled, updateRequest.SmsEnabled), CancellationToken.None),
                     Times.Once);
             }
 
@@ -149,14 +130,14 @@ namespace SampleApiTests
             public async Task NotificationServiceFails_ReturnsServiceUnavailable()
             {
                 // Arrange
-                var updateRequest = new CustomerPreferencesRequest(true, true);
-
-                requestValidator
-                    .Setup(v => v.ValidateAsync(updateRequest, It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new ValidationResult());
+                var updateRequest = new CustomerPreferencesRequest
+                {
+                    EmailEnabled = true,
+                    SmsEnabled = true
+                };
 
                 customerService
-                    .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled!.Value, updateRequest.SmsEnabled!.Value), CancellationToken.None))
+                    .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled, updateRequest.SmsEnabled), CancellationToken.None))
                     .ReturnsAsync(UpdateOperationResult.Failure);
 
                 // Act
@@ -170,42 +151,10 @@ namespace SampleApiTests
                 Assert.Equal("Notification service unavailable", objectResult!.Value?.GetType().GetProperty("Title")?.GetValue(objectResult.Value));
                 Assert.Equal("Preferences were saved, but the notification system could not be informed.", objectResult!.Value?.GetType().GetProperty("Detail")?.GetValue(objectResult.Value));
 
-                requestValidator.Verify(
-                    v => v.ValidateAsync(updateRequest, It.IsAny<CancellationToken>()),
-                    Times.Once);
                 customerService.Verify(
-                    r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled!.Value, updateRequest.SmsEnabled!.Value), CancellationToken.None),
+                    r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled, updateRequest.SmsEnabled), CancellationToken.None),
                     Times.Once);
             }
-
-            [Fact]
-            public async Task InvalidPreferences_ReturnsBadRequest()
-            {
-                // Arrange
-                var updateRequest = new CustomerPreferencesRequest(true, true);
-
-                requestValidator
-                    .Setup(v => v.ValidateAsync(It.IsAny<CustomerPreferencesRequest>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("EmailEnabled", "Invalid") }));
-
-                customerService
-                    .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, updateRequest.EmailEnabled!.Value, updateRequest.SmsEnabled!.Value), CancellationToken.None))
-                    .ReturnsAsync(UpdateOperationResult.Success);
-
-                // Act
-                var result = await CreateController().UpdateNotificationPreferencesAsync(CustomerId, updateRequest, CancellationToken.None);
-
-                // Assert
-                Assert.NotNull(result);
-                var problemDetails = Assert.IsType<ValidationProblemDetails>(Assert.IsType<ObjectResult>(result.Result).Value);
-                Assert.Equal(new[] { "Invalid" }, problemDetails.Errors["EmailEnabled"]);
-
-                requestValidator.Verify(
-                    v => v.ValidateAsync(It.IsAny<CustomerPreferencesRequest>(), It.IsAny<CancellationToken>()),
-                    Times.Once);
-                customerService.VerifyNoOtherCalls();
-            }
-
         }
     }
 }
