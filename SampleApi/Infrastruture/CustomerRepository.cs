@@ -18,18 +18,12 @@ namespace SampleApi.Infrastruture
 
         public async Task<UpdatePreferencesResult> UpdateCustomerPreferencesAsync(CustomerPreferences preferences, CancellationToken cancellationToken)
         {
-            var customer = await dbContext.Customers.FirstOrDefaultAsync(c => c.Id == preferences.CustomerId, cancellationToken);
+            var customer = await dbContext.Customers.SingleOrDefaultAsync(c => c.Id == preferences.CustomerId, cancellationToken);
             if (customer != null)
             {
-                if (customer.EmailNotificationsEnabled == preferences.EmailEnabled && customer.SmsNotificationsEnabled == preferences.SmsEnabled)
-                {
-                    return UpdatePreferencesResult.UnChanged;
-                }
-
                 customer.EmailNotificationsEnabled = preferences.EmailEnabled;
                 customer.SmsNotificationsEnabled = preferences.SmsEnabled;
-                await dbContext.SaveChangesAsync(cancellationToken);
-                return UpdatePreferencesResult.Updated;
+                return await dbContext.SaveChangesAsync(cancellationToken) == 0 ? UpdatePreferencesResult.Unchanged : UpdatePreferencesResult.Updated;
             }
             return UpdatePreferencesResult.CustomerNotFound;
         }

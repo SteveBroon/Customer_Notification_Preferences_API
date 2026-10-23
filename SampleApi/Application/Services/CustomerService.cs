@@ -57,7 +57,7 @@ namespace SampleApi.Application.Services
         private static UpdateOperationResult MapUpdatePreferencesResult(UpdatePreferencesResult updateResult) => updateResult switch
         {
             UpdatePreferencesResult.Updated => UpdateOperationResult.Success,
-            UpdatePreferencesResult.UnChanged => UpdateOperationResult.Success,
+            UpdatePreferencesResult.Unchanged => UpdateOperationResult.Success,
             UpdatePreferencesResult.CustomerNotFound => UpdateOperationResult.NotFound,
             _ => throw new ArgumentOutOfRangeException(nameof(updateResult), updateResult, "Unexpected update result")
         };

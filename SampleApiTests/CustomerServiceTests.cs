@@ -125,7 +125,7 @@ namespace SampleApiTests
                 var request = new CustomerPreferences(CustomerId, true, true);
                 customerRepository
                     .Setup(r => r.UpdateCustomerPreferencesAsync(new CustomerPreferences(CustomerId, true, true), CancellationToken.None))
-                    .ReturnsAsync(UpdatePreferencesResult.UnChanged);
+                    .ReturnsAsync(UpdatePreferencesResult.Unchanged);
 
 
                 // Act
